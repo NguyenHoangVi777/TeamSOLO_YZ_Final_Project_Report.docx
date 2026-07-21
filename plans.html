@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Gói tập - Gym Admin</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="logo"><h2>Gym Manager</h2></div>
+            <nav class="menu">
+                <ul>
+                    <li><a href="index.html">Tổng quan</a></li>
+                    <li><a href="members.html">Hội viên</a></li>
+                    <li><a href="plans.html" class="active">Gói tập</a></li>
+                    <li><a href="trainers.html">Huấn luyện viên</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <div class="main-wrapper">
+            <header class="header">
+                <!-- Đã thêm id="searchInput" vào đây -->
+                <div class="search-bar"><input type="text" id="searchInput" placeholder="Tìm kiếm gói tập..."></div>
+                <div class="user-profile">
+                    <span class="notification">🔔</span>
+                    <div class="avatar" onclick="document.getElementById('logoutMenu').classList.toggle('show-dropdown')">AD</div>
+                    <div class="dropdown-content" id="logoutMenu">
+                        <a href="login.html">Đăng xuất</a>
+                    </div>
+                </div>
+            </header>
+
+            <main class="main-content">
+                <div class="page-header">
+                    <h1>Danh sách Gói tập</h1>
+                    <button class="btn btn-primary" onclick="document.getElementById('modal').style.display='flex'">+ Thêm Gói Mới</button>
+                </div>
+                <div class="grid-layout" id="gridContainer"></div>
+            </main>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Thêm Gói Tập</h2><span class="close-btn" onclick="document.getElementById('modal').style.display='none'">&times;</span>
+            </div>
+            <div class="input-group"><label>Tên gói</label><input type="text" id="inpName" placeholder="VD: Gói Sinh viên (3 Tháng)"></div>
+            <div class="input-group"><label>Giá tiền (VNĐ)</label><input type="number" id="inpPrice" placeholder="VD: 1500000"></div>
+            <div class="input-group"><label>Số tháng hiệu lực (Để hệ thống tính ngày)</label><input type="number" id="inpMonths" placeholder="VD: 3"></div>
+            <button class="btn btn-primary" style="width:100%" id="btnSave">Tạo Gói</button>
+        </div>
+    </div>
+
+    <script>
+        let plansData = JSON.parse(localStorage.getItem("gymPlans")) || [
+            { name: "Gói Classic (1 Tháng)", price: 500000, months: 1 },
+            { name: "Gói VIP (6 Tháng)", price: 2500000, months: 6 }
+        ];
+
+        function renderPlans() {
+            let container = document.getElementById("gridContainer");
+            container.innerHTML = "";
+            plansData.forEach((p, index) => {
+                container.innerHTML += `<div class="card-item">
+                    <h2 class="card-title">${p.name}</h2>
+                    <div class="card-price">${Number(p.price).toLocaleString('vi-VN')}đ</div>
+                    <p style="color:#888; font-size: 13px; margin-bottom: 15px;">Thời hạn: ${p.months} tháng</p>
+                    <button class="btn-action delete" onclick="deletePlan(${index})">Xóa</button>
+                </div>`;
+            });
+        }
+        renderPlans();
+
+        document.getElementById("btnSave").onclick = function() {
+            let name = document.getElementById("inpName").value;
+            let price = document.getElementById("inpPrice").value;
+            let months = document.getElementById("inpMonths").value;
+            if(!name || !price || !months) return alert("Nhập đủ thông tin!");
+            
+            plansData.push({ name: name, price: Number(price), months: Number(months) });
+            localStorage.setItem("gymPlans", JSON.stringify(plansData));
+            renderPlans();
+            
+            document.getElementById('modal').style.display = 'none';
+            document.getElementById("inpName").value = '';
+            document.getElementById("inpPrice").value = '';
+            document.getElementById("inpMonths").value = '';
+        }
+
+        function deletePlan(index) {
+            if(confirm("Xóa gói này?")) {
+                plansData.splice(index, 1);
+                localStorage.setItem("gymPlans", JSON.stringify(plansData));
+                renderPlans();
+            }
+        }
+
+        // ==========================================
+        // LIVE SEARCH CHO TRANG GÓI TẬP
+        // ==========================================
+        document.getElementById("searchInput").addEventListener("input", function() {
+            let filter = this.value.toLowerCase().trim();
+            let cards = document.querySelectorAll(".card-item");
+            
+            cards.forEach(card => {
+                let cardText = card.innerText.toLowerCase();
+                card.style.display = cardText.includes(filter) ? "" : "none";
+            });
+        });
+    </script>
+</body>
+</html>
