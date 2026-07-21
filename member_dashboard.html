@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Trang Cá Nhân - Gym Manager</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .member-profile-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #1a1c23; }
+        .member-card { background: white; width: 450px; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 30px rgba(0,0,0,0.3); text-align: center; }
+        .member-card-header { background: linear-gradient(135deg, #ff5722, #e64a19); color: white; padding: 40px 20px; }
+        .member-avatar { width: 90px; height: 90px; background: white; color: #ff5722; font-size: 32px; font-weight: bold; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 15px; border: 4px solid rgba(255,255,255,0.3); }
+        .member-card-body { padding: 30px; }
+        .info-row { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 15px 0; font-size: 15px; }
+        .info-row span { color: #888; }
+        .info-row strong { color: #1a1c23; }
+        .days-left-box { margin-top: 25px; padding: 20px; border-radius: 12px; background-color: #f8f9fa; border: 2px dashed #ddd; }
+        .days-number { font-size: 40px; font-weight: bold; color: #ff5722; line-height: 1; margin: 10px 0; }
+        .warning-text { color: #c62828; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="member-profile-container">
+        <div class="member-card" id="cardContent">
+            <div style="padding: 50px;">Đang tải thông tin...</div>
+        </div>
+    </div>
+
+    <script>
+        let currentUserId = localStorage.getItem("currentLoggedInMember");
+        let membersData = JSON.parse(localStorage.getItem("gymMembers")) || [];
+        let cardContent = document.getElementById("cardContent");
+
+        let currentUser = membersData.find(mem => mem.id === currentUserId);
+
+        if (currentUser) {
+            let endParts = currentUser.end.split('/');
+            let endDate = new Date(endParts[2], endParts[1] - 1, endParts[0]);
+            
+            let today = new Date();
+            today.setHours(0, 0, 0, 0); 
+            
+            let diffTime = endDate - today;
+            let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            let daysDisplay = "";
+            if (diffDays >= 0) {
+                daysDisplay = `<div class="days-left-box">
+                                  <span>Thời gian tập còn lại:</span>
+                                  <div class="days-number">${diffDays}</div>
+                                  <span>ngày</span>
+                               </div>`;
+            } else {
+                daysDisplay = `<div class="days-left-box" style="border-color: #c62828; background-color: #ffebee;">
+                                  <span class="warning-text">THẺ CỦA BẠN ĐÃ HẾT HẠN!</span>
+                                  <p style="font-size:13px; margin-top:10px;">Vui lòng liên hệ Lễ tân để gia hạn.</p>
+                               </div>`;
+            }
+
+            let initials = currentUser.name.substring(0, 2).toUpperCase();
+
+            cardContent.innerHTML = `
+                <div class="member-card-header">
+                    <div class="member-avatar">${initials}</div>
+                    <h2>${currentUser.name}</h2>
+                    <p>Mã Hội Viên: <strong>${currentUser.id}</strong></p>
+                </div>
+                <div class="member-card-body">
+                    <div class="info-row"><span>Gói dịch vụ:</span> <strong>${currentUser.plan}</strong></div>
+                    <div class="info-row"><span>Ngày đăng ký:</span> <strong>${currentUser.start}</strong></div>
+                    <div class="info-row"><span>Ngày hết hạn:</span> <strong>${currentUser.end}</strong></div>
+                    <div class="info-row"><span>Giá trị hợp đồng:</span> <strong style="color:#2e7d32">${Number(currentUser.price).toLocaleString('vi-VN')}đ</strong></div>
+                    ${daysDisplay}
+                    <a href="login.html" class="btn btn-primary" style="display: block; width: 100%; margin-top: 25px; text-decoration: none;">Đăng xuất</a>
+                </div>
+            `;
+        } else {
+            window.location.href = "login.html"; // Đá văng ra ngoài nếu tài khoản không hợp lệ
+        }
+    </script>
+</body>
+</html>
