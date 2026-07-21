@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Hội viên - Gym Admin</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="logo"><h2>Gym Manager</h2></div>
+            <nav class="menu">
+                <ul>
+                    <li><a href="index.html">Tổng quan</a></li>
+                    <li><a href="members.html" class="active">Hội viên</a></li>
+                    <li><a href="plans.html">Gói tập</a></li>
+                    <li><a href="trainers.html">Huấn luyện viên</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- MAIN WRAPPER -->
+        <div class="main-wrapper">
+            <header class="header">
+                <div class="search-bar"><input type="text" id="searchInput" placeholder="Tìm kiếm hội viên..."></div>
+                <div class="user-profile">
+                    <span class="notification">🔔</span>
+                    <div class="avatar" onclick="document.getElementById('logoutMenu').classList.toggle('show-dropdown')">AD</div>
+                    <div class="dropdown-content" id="logoutMenu">
+                        <a href="login.html">Đăng xuất</a>
+                    </div>
+                </div>
+            </header>
+
+            <main class="main-content">
+                <div class="page-header">
+                    <h1>Danh sách Hội viên</h1>
+                    <button class="btn btn-primary" onclick="openAddModal()">+ Thêm Hội Viên</button>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Mã HV</th><th>Họ Tên</th><th>Ngày bắt đầu</th>
+                                <th>Ngày kết thúc</th><th>Gói tập</th><th>Thành tiền</th><th>Trạng thái</th><th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- MODAL (CÓ THÊM 2 Ô CHỈNH NGÀY BẮT ĐẦU VÀ KẾT THÚC) -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Thêm Hội Viên</h2>
+                <span class="close-btn" onclick="document.getElementById('modal').style.display='none'">&times;</span>
+            </div>
+            <div class="input-group"><label>Họ và Tên</label><input type="text" id="inpName" placeholder="Nhập tên hội viên"></div>
+            
+            <!-- 2 Ô CHỈNH NGÀY (CÓ THỂ TỰ CHỌN HOẶC NHẬP ĐỊNH DẠNG DD/MM/YYYY) -->
+            <div class="input-group"><label>Ngày bắt đầu (VD: 21/07/2026)</label><input type="text" id="inpStart" placeholder="DD/MM/YYYY"></div>
+            <div class="input-group"><label>Ngày kết thúc (VD: 21/01/2027)</label><input type="text" id="inpEnd" placeholder="DD/MM/YYYY"></div>
+
+            <div class="input-group">
+                <label>Gói tập</label>
+                <select id="inpPlan"></select>
+            </div>
+            <div class="input-group">
+                <label>Trạng thái</label>
+                <select id="inpStatus"><option value="Hoạt động">Hoạt động</option><option value="Hết hạn">Hết hạn</option></select>
+            </div>
+            <button class="btn btn-primary" style="width:100%" id="btnSave">Lưu Thông Tin</button>
+        </div>
+    </div>
+
+    <script>
+        const tableBody = document.getElementById("tableBody");
+        let editingIndex = -1; 
+        
+        let plansData = JSON.parse(localStorage.getItem("gymPlans"));
+        if (!plansData || plansData.length === 0) {
+            plansData = [
+                { name: "Gói Classic (1 Tháng)", price: 500000, months: 1 },
+                { name: "Gói VIP (6 Tháng)", price: 2500000, months: 6 }
+            ];
+            localStorage.setItem("gymPlans", JSON.stringify(plansData));
+        }
+
+        let planSelect = document.getElementById("inpPlan");
+        planSelect.innerHTML = "";
+        plansData.forEach(p => {
+            planSelect.innerHTML += `<option value="${p.name}" data-price="${p.price}">${p.name} - ${p.price.toLocaleString('vi-VN')}đ</option>`;
+        });
+
+        let membersData = JSON.parse(localStorage.getItem("gymMembers"));
+        if (!membersData || membersData.length === 0) {
+            membersData = [
+                { id: 'HV001', name: 'Nguyễn Hoàng Vĩ', start: '21/01/2026', end: '21/07/2026', plan: 'Gói VIP (6 Tháng)', price: 2500000, status: 'Hoạt động' }
+            ];
+            localStorage.setItem("gymMembers", JSON.stringify(membersData));
+        }
+
+        function renderTable() {
+            tableBody.innerHTML = "";
+            membersData.forEach((mem, index) => {
+                let badgeClass = mem.status === "Hoạt động" ? "badge-active" : "badge-expired";
+                tableBody.innerHTML += `
+                    <tr>
+                        <td><b>${mem.id}</b></td>
+                        <td>${mem.name}</td>
+                        <td>${mem.start}</td>
+                        <td><b style="color:#ff5722">${mem.end}</b></td>
+                        <td>${mem.plan}</td>
+                        <td><b style="color:#2e7d32">${Number(mem.price).toLocaleString('vi-VN')}đ</b></td>
+                        <td><span class="badge ${badgeClass}">${mem.status}</span></td>
+                        <td>
+                            <button class="btn-action edit" onclick="openEditModal(${index})">Sửa</button>
+                            <button class="btn-action delete" onclick="deleteMember(${index})">Xóa</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+        renderTable();
+
+        // Hàm hỗ trợ lấy ngày hiện tại định dạng DD/MM/YYYY
+        function getCurrentDateStr() {
+            let today = new Date();
+            let d = today.getDate().toString().padStart(2, '0');
+            let m = (today.getMonth() + 1).toString().padStart(2, '0');
+            let y = today.getFullYear();
+            return `${d}/${m}/${y}`;
+        }
+
+        // Hàm tính trước ngày kết thúc mặc định (cộng 1 tháng)
+        function getDefaultEndDateStr() {
+            let today = new Date();
+            today.setMonth(today.getMonth() + 1);
+            let d = today.getDate().toString().padStart(2, '0');
+            let m = (today.getMonth() + 1).toString().padStart(2, '0');
+            let y = today.getFullYear();
+            return `${d}/${m}/${y}`;
+        }
+
+        function openAddModal() {
+            editingIndex = -1;
+            document.getElementById("modalTitle").innerText = "Thêm Hội Viên Mới";
+            document.getElementById("inpName").value = '';
+            // Gán sẵn ngày hiện tại và ngày kết thúc mặc định để người dùng dễ nhìn, nhưng có thể sửa trực tiếp
+            document.getElementById("inpStart").value = getCurrentDateStr();
+            document.getElementById("inpEnd").value = getDefaultEndDateStr();
+            document.getElementById("inpStatus").value = "Hoạt động";
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function openEditModal(index) {
+            editingIndex = index;
+            let mem = membersData[index];
+            document.getElementById("modalTitle").innerText = "Cập Nhật Hội Viên";
+            document.getElementById("inpName").value = mem.name;
+            document.getElementById("inpStart").value = mem.start; // Đưa ngày bắt đầu cũ lên ô nhập để sửa
+            document.getElementById("inpEnd").value = mem.end;     // Đưa ngày kết thúc cũ lên ô nhập để sửa
+            document.getElementById("inpPlan").value = mem.plan;
+            document.getElementById("inpStatus").value = mem.status;
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        document.getElementById("btnSave").onclick = function() {
+            let name = document.getElementById("inpName").value;
+            let startStr = document.getElementById("inpStart").value;
+            let endStr = document.getElementById("inpEnd").value;
+            let planOption = planSelect.options[planSelect.selectedIndex];
+            let planName = planOption.value;
+            let planPrice = Number(planOption.getAttribute('data-price'));
+            let status = document.getElementById("inpStatus").value;
+            
+            if (!name || !startStr || !endStr) return alert("Vui lòng nhập đầy đủ Tên, Ngày bắt đầu và Ngày kết thúc!");
+
+            if (editingIndex === -1) {
+                let newId = 'HV' + String(membersData.length + 1).padStart(3, '0');
+                membersData.push({ id: newId, name: name, start: startStr, end: endStr, plan: planName, price: planPrice, status: status });
+            } else {
+                membersData[editingIndex].name = name;
+                membersData[editingIndex].start = startStr; // Lưu ngày mới do người dùng vừa chỉnh sửa
+                membersData[editingIndex].end = endStr;     // Lưu ngày mới do người dùng vừa chỉnh sửa
+                membersData[editingIndex].plan = planName;
+                membersData[editingIndex].price = planPrice;
+                membersData[editingIndex].status = status;
+            }
+
+            localStorage.setItem("gymMembers", JSON.stringify(membersData));
+            renderTable();
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        function deleteMember(index) {
+            if (confirm("Xóa hội viên này?")) {
+                membersData.splice(index, 1);
+                localStorage.setItem("gymMembers", JSON.stringify(membersData));
+                renderTable();
+            }
+        }
+
+        // Live Search
+        document.getElementById("searchInput").addEventListener("input", function() {
+            let filter = this.value.toLowerCase().trim();
+            let rows = document.querySelectorAll("#tableBody tr");
+            rows.forEach(row => {
+                let rowText = row.innerText.toLowerCase();
+                row.style.display = rowText.includes(filter) ? "" : "none";
+            });
+        });
+    </script>
+</body>
+</html>
