@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng nhập - Gym Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="login-body">
+    <div class="login-container">
+        <!-- BANNER -->
+        <div class="login-banner">
+            <h2>Kiến tạo vóc dáng<br>Quản lý dễ dàng</h2>
+            <p>Hệ thống quản lý phòng tập chuyên nghiệp</p>
+        </div>
+        
+        <!-- FORM ĐĂNG NHẬP -->
+        <div class="login-form-box">
+            <h2 style="margin-bottom: 5px;">Đăng Nhập</h2>
+            <p style="color:#888; font-size:14px; margin-bottom: 20px;">Vui lòng chọn quyền truy cập hệ thống</p>
+            
+            <form id="loginForm">
+                <div class="input-group">
+                    <label>Bạn là ai?</label>
+                    <select id="roleSelect">
+                        <option value="admin">Quản lý (Admin)</option>
+                        <option value="member">Hội viên (Khách)</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label id="userLabel">Tên đăng nhập</label>
+                    <input type="text" id="username" placeholder="Nhập tên đăng nhập (VD: admin)" required>
+                </div>
+                
+                <!-- Gắn id="passwordGroup" để JS có thể ẩn/hiện ô này -->
+                <div class="input-group" id="passwordGroup">
+                    <label>Mật khẩu</label>
+                    <input type="password" id="password" placeholder="Nhập mật khẩu" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width:100%; padding:15px; margin-top: 10px;">Đăng nhập</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT XỬ LÝ ẨN/HIỆN MẬT KHẨU VÀ ĐĂNG NHẬP -->
+    <script>
+        let roleSelect = document.getElementById("roleSelect");
+        let passwordGroup = document.getElementById("passwordGroup");
+        let passwordInput = document.getElementById("password");
+        let usernameInput = document.getElementById("username");
+        let userLabel = document.getElementById("userLabel");
+
+        // 1. HIỆU ỨNG UX: Thay đổi form tùy theo vai trò được chọn
+        roleSelect.addEventListener("change", function() {
+            if (this.value === "member") {
+                // Nếu là Khách: Ẩn ô mật khẩu, đổi câu nhắc
+                passwordGroup.style.display = "none";
+                passwordInput.required = false; // Bỏ bắt buộc nhập mật khẩu
+                userLabel.innerText = "Mã Hội Viên";
+                usernameInput.placeholder = "Nhập mã Hội Viên của bạn (VD: HV001)";
+            } else {
+                // Nếu là Admin: Hiện lại ô mật khẩu
+                passwordGroup.style.display = "flex";
+                passwordInput.required = true;
+                userLabel.innerText = "Tên đăng nhập";
+                usernameInput.placeholder = "Nhập tên đăng nhập (VD: admin)";
+            }
+        });
+
+        // 2. LOGIC ĐĂNG NHẬP
+        document.getElementById("loginForm").onsubmit = function(event) {
+            event.preventDefault(); 
+            
+            var role = roleSelect.value;
+            // Tự động chuyển chữ thường thành chữ IN HOA và xóa khoảng trắng thừa
+            var user = usernameInput.value.trim().toUpperCase(); 
+            var pass = passwordInput.value;
+            
+            if (role === "admin") {
+                // KIỂM TRA QUẢN TRỊ VIÊN
+                if (user === "ADMIN" && pass === "123456") {
+                    window.location.href = "index.html";
+                } else {
+                    alert("Sai tên đăng nhập hoặc mật khẩu quản trị viên!");
+                }
+            } else {
+                // KIỂM TRA HỘI VIÊN (KHÔNG CẦN MẬT KHẨU)
+                let membersData = JSON.parse(localStorage.getItem("gymMembers")) || [];
+                let isExist = membersData.find(mem => mem.id === user);
+                
+                if (isExist) {
+                    // Nếu đúng mã HV, lưu vào trí nhớ tạm và cho vào trang cá nhân
+                    localStorage.setItem("currentLoggedInMember", user);
+                    window.location.href = "member_dashboard.html";
+                } else {
+                    alert("Tra cứu thất bại! Không tìm thấy mã hội viên " + user + " trong hệ thống. Vui lòng liên hệ Lễ tân.");
+                }
+            }
+        };
+    </script>
+</body>
+</html>
