@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng ký - Gym Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="login-body">
+    <div class="login-container">
+        <div class="login-banner">
+            <h2>Tham gia cùng<br>Gym Manager</h2>
+            <p>Trở thành hội viên để trải nghiệm dịch vụ tốt nhất</p>
+        </div>
+        <div class="login-form-box">
+            <h2 style="margin-bottom: 5px;">Đăng Ký Mới</h2>
+            <p style="color:#888; font-size:14px; margin-bottom: 20px;">Tạo tài khoản hội viên của bạn</p>
+            
+            <form id="registerForm">
+                <div class="input-group">
+                    <label>Họ và Tên</label>
+                    <input type="text" placeholder="Nhập họ và tên" required>
+                </div>
+                <div class="input-group">
+                    <label>Email / Số điện thoại</label>
+                    <input type="text" placeholder="Nhập email hoặc SĐT" required>
+                </div>
+                <div class="input-group">
+                    <label>Mật khẩu</label>
+                    <input type="password" placeholder="Tạo mật khẩu" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%; padding:15px;">Đăng ký tài khoản</button>
+                <p style="text-align: center; margin-top: 15px; font-size: 14px;">
+                    Đã có tài khoản? <a href="login.html" style="color: #ff5722; font-weight: bold; text-decoration: none;">Đăng nhập</a>
+                </p>
+            </form>
+        </div>
+    </div>
+    <script>
+        document.getElementById("registerForm").onsubmit = function(event) {
+            event.preventDefault();
+            alert("Chúc mừng bạn đã đăng ký thành công! Hệ thống sẽ chuyển về trang đăng nhập.");
+            window.location.href = "login.html";
+        };
+    </script>
+</body>
+</html>

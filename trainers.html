@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Huấn luyện viên - Gym Admin</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="logo"><h2>Gym Manager</h2></div>
+            <nav class="menu">
+                <ul>
+                    <li><a href="index.html">Tổng quan</a></li>
+                    <li><a href="members.html">Hội viên</a></li>
+                    <li><a href="plans.html">Gói tập</a></li>
+                    <li><a href="trainers.html" class="active">Huấn luyện viên</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <div class="main-wrapper">
+            <header class="header">
+                <!-- Đã thêm id="searchInput" vào đây -->
+                <div class="search-bar"><input type="text" id="searchInput" placeholder="Tìm kiếm PT..."></div>
+                <div class="user-profile">
+                    <span class="notification">🔔</span>
+                    <div class="avatar" onclick="document.getElementById('logoutMenu').classList.toggle('show-dropdown')">AD</div>
+                    <div class="dropdown-content" id="logoutMenu">
+                        <a href="login.html">Đăng xuất</a>
+                    </div>
+                </div>
+            </header>
+
+            <main class="main-content">
+                <div class="page-header">
+                    <h1>Đội ngũ Huấn luyện viên</h1>
+                    <button class="btn btn-primary" onclick="document.getElementById('modal').style.display='flex'">+ Thêm PT Mới</button>
+                </div>
+                <div class="grid-layout" id="gridContainer" style="grid-template-columns: repeat(4, 1fr);"></div>
+            </main>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Thêm PT</h2><span class="close-btn" onclick="document.getElementById('modal').style.display='none'">&times;</span>
+            </div>
+            <div class="input-group"><label>Tên PT</label><input type="text" id="inpName"></div>
+            <div class="input-group"><label>Chuyên môn</label><input type="text" id="inpSpec"></div>
+            <button class="btn btn-primary" style="width:100%" id="btnSave">Lưu Hồ Sơ</button>
+        </div>
+    </div>
+
+    <script>
+        let trainersData = JSON.parse(localStorage.getItem("gymTrainers")) || [
+            { name: "Mạnh Dũng", spec: "Tăng cơ - Giảm mỡ", initials: "MĐ" }
+        ];
+
+        function renderTrainers() {
+            let container = document.getElementById("gridContainer");
+            container.innerHTML = "";
+            trainersData.forEach((t, index) => {
+                container.innerHTML += `<div class="card-item">
+                    <div class="trainer-avatar">${t.initials}</div><h3>${t.name}</h3>
+                    <p style="font-size:13px; color:#888; margin-bottom:15px;">${t.spec}</p>
+                    <button class="btn-action delete" onclick="deletePT(${index})">Xóa</button>
+                </div>`;
+            });
+        }
+        renderTrainers();
+
+        document.getElementById("btnSave").onclick = function() {
+            let name = document.getElementById("inpName").value;
+            let spec = document.getElementById("inpSpec").value;
+            if(!name || !spec) return alert("Nhập đủ thông tin!");
+            
+            let initials = name.substring(0, 2).toUpperCase();
+            trainersData.push({ name: name, spec: spec, initials: initials });
+            localStorage.setItem("gymTrainers", JSON.stringify(trainersData));
+            renderTrainers();
+            
+            document.getElementById('modal').style.display = 'none';
+            document.getElementById("inpName").value = '';
+            document.getElementById("inpSpec").value = '';
+        }
+
+        function deletePT(index) {
+            if(confirm("Xóa PT này khỏi hệ thống?")) {
+                trainersData.splice(index, 1);
+                localStorage.setItem("gymTrainers", JSON.stringify(trainersData));
+                renderTrainers();
+            }
+        }
+
+        // ==========================================
+        // LIVE SEARCH CHO TRANG HUẤN LUYỆN VIÊN
+        // ==========================================
+        document.getElementById("searchInput").addEventListener("input", function() {
+            let filter = this.value.toLowerCase().trim();
+            let cards = document.querySelectorAll(".card-item");
+            
+            cards.forEach(card => {
+                let cardText = card.innerText.toLowerCase();
+                card.style.display = cardText.includes(filter) ? "" : "none";
+            });
+        });
+    </script>
+</body>
+</html>
