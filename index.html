@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Tổng quan - Gym Admin</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="logo"><h2>Gym Manager</h2></div>
+            <nav class="menu">
+                <ul>
+                    <li><a href="index.html" class="active">Tổng quan</a></li>
+                    <li><a href="members.html">Hội viên</a></li>
+                    <li><a href="plans.html">Gói tập</a></li>
+                    <li><a href="trainers.html">Huấn luyện viên</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <div class="main-wrapper">
+            <header class="header">
+                <div class="search-bar"><input type="text" placeholder="Tìm kiếm..."></div>
+                <div class="user-profile">
+                    <span class="notification">🔔</span>
+                    <div class="avatar" onclick="document.getElementById('logoutMenu').classList.toggle('show-dropdown')">AD</div>
+                    <div class="dropdown-content" id="logoutMenu">
+                        <a href="login.html">Đăng xuất</a>
+                    </div>
+                </div>
+            </header>
+
+            <main class="main-content">
+                <div class="page-title"><h1>Tổng quan tình hình</h1></div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card"><h3>Tổng hội viên</h3><p class="number" id="totalMembersCount">0</p></div>
+                    <div class="stat-card"><h3>Thẻ sắp hết hạn</h3><p class="number" id="expiredMembersCount">0</p></div>
+                    <!-- TỰ ĐỘNG CỘNG TIỀN TỪ HỘI VIÊN -->
+                    <div class="stat-card"><h3>Tổng Doanh Thu</h3><p class="number" id="totalRevenue">0đ</p></div>
+                    <div class="stat-card"><h3>Đang check-in</h3><p class="number">35</p></div>
+                </div>
+
+                <div class="dashboard-details">
+                    <div class="chart-section">
+                        <h3>Lưu lượng khách tuần này</h3>
+                        <div style="position:relative; height:250px; width:100%; margin-top:15px;">
+                            <canvas id="trafficChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="alert-section">
+                        <h3>Cần gia hạn gấp</h3>
+                        <ul id="alertList"></ul>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('trafficChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: { labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'], datasets: [{ label: 'Lượt check-in', data: [45, 59, 80, 81, 56, 95, 120], backgroundColor: '#ff5722', borderRadius: 5 }] },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        function syncDashboardData() {
+            let membersData = JSON.parse(localStorage.getItem("gymMembers")) || [];
+            document.getElementById("totalMembersCount").innerText = membersData.length;
+            
+            // Tính toán doanh thu
+            let totalRevenue = membersData.reduce((sum, mem) => sum + Number(mem.price), 0);
+            document.getElementById("totalRevenue").innerText = totalRevenue.toLocaleString('vi-VN') + "đ";
+            
+            let expiredMembers = membersData.filter(mem => mem.status === "Hết hạn");
+            document.getElementById("expiredMembersCount").innerText = expiredMembers.length;
+
+            let alertList = document.getElementById("alertList");
+            alertList.innerHTML = ""; 
+            if (expiredMembers.length === 0) {
+                alertList.innerHTML = "<li><span style='color:#2e7d32; font-weight:bold;'> TẤT CẢ ĐỀU CÒN HẠN!</span></li>";
+            } else {
+                expiredMembers.forEach(mem => {
+                    alertList.innerHTML += `<li style="margin-bottom:10px; border-bottom:1px dashed #eee; padding-bottom:5px;">
+                        <strong style="color:#c62828">${mem.name}</strong> - ${mem.plan}
+                        <br><small style="color:#888">Hạn thẻ: ${mem.end}</small></li>`;
+                });
+            }
+        }
+        syncDashboardData();
+    </script>
+</body>
+</html>
